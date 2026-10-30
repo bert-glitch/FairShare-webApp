@@ -1,0 +1,19 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro badge(status) %}<span class="badge status-{{ status }}">{{ status }}</span>{% endmacro %}
+
+{% macro balance_text(value) -%}
+  {%- if value > 0 -%}is owed {{ value|peso }}
+  {%- elif value < 0 -%}owes {{ (-value)|peso }}
+  {%- else -%}settled{%- endif -%}
+{%- endmacro %}
+
+{% macro group_nav(group, active) %}
+<ul class="nav nav-tabs mb-3">
+  {% for key, label, endpoint in [('detail','Overview','groups.detail'),('members','Members','groups.members'),
+        ('expenses','Expenses','expenses.history'),('balances','Balances','groups.balances'),
+        ('settlements','Settlements','settlements.open_list'),('history','Payment history','settlements.history')] %}
+  <li class="nav-item"><a class="nav-link {{ 'active' if active == key }}" href="{{ url_for(endpoint, group_id=group.group_id) }}">{{ label }}</a></li>
+  {% endfor %}
+</ul>
+{% endmacro %}

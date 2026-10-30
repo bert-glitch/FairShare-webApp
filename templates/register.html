@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-6">
+  <div class="card"><div class="card-header">Create an account</div><div class="card-body">
+    <form method="post">{{ csrf() }}
+      <div class="mb-3"><label class="form-label" for="full_name">Full name</label>
+        <input class="form-control" id="full_name" name="full_name" maxlength="100" required value="{{ form.get('full_name','') }}"></div>
+      <div class="mb-3"><label class="form-label" for="username">Username</label>
+        <input class="form-control" id="username" name="username" maxlength="50" required value="{{ form.get('username','') }}">
+        <div class="form-text">3-50 letters, numbers, dots or underscores.</div></div>
+      <div class="mb-3"><label class="form-label" for="email">Email (optional)</label>
+        <input class="form-control" id="email" type="email" name="email" maxlength="100" value="{{ form.get('email','') }}"></div>
+      <div class="row">
+        <div class="col-md-6 mb-3"><label class="form-label" for="password">Password</label>
+          <input class="form-control" id="password" type="password" name="password" minlength="8" required></div>
+        <div class="col-md-6 mb-3"><label class="form-label" for="confirm_password">Repeat password</label>
+          <input class="form-control" id="confirm_password" type="password" name="confirm_password" minlength="8" required></div>
+      </div>
+      <button class="btn btn-dark w-100" type="submit">Register</button>
+    </form>
+    <hr><p class="mb-0">Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+  </div></div>
+</div></div>
+{% endblock %}

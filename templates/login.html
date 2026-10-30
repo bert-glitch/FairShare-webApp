@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-5">
+  <div class="card"><div class="card-header">Log in</div><div class="card-body">
+    {% if not has_admin %}
+    <div class="alert alert-warning">No administrator exists yet. Run <code>python setup_admin.py</code> once to create it.</div>
+    {% endif %}
+    <form method="post" autocomplete="on">{{ csrf() }}
+      <div class="mb-3"><label class="form-label" for="username">Username</label>
+        <input class="form-control" id="username" name="username" required autofocus></div>
+      <div class="mb-3"><label class="form-label" for="password">Password</label>
+        <input class="form-control" id="password" type="password" name="password" required></div>
+      <button class="btn btn-dark w-100" type="submit">Log in</button>
+    </form>
+    <hr><p class="mb-0">New here? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+  </div></div>
+</div></div>
+{% endblock %}

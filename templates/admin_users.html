@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, badge %}
+{% block title %}Manage users{% endblock %}
+{% block content %}
+<h2 class="mb-3">Manage users</h2>
+<div class="card mb-4"><div class="card-body p-0">
+  <table class="table mb-0 align-middle"><thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+  {% for u in users %}
+    <tr><td>{{ u.full_name }}</td><td>{{ u.username }}</td><td>{{ u.email or '' }}</td><td>{{ u.role }}</td>
+        <td>{{ badge('active' if u.is_active else 'inactive') }}</td>
+        <td><div class="d-flex gap-2 flex-wrap">
+          {% if u.role != 'admin' %}
+          <form method="post" action="{{ url_for('admin.toggle_user', user_id=u.user_id) }}" data-confirm="Change this account's status?">{{ csrf() }}
+            <button class="btn btn-sm btn-outline-dark" type="submit">{{ 'Deactivate' if u.is_active else 'Activate' }}</button></form>
+          {% endif %}
+          <form method="post" action="{{ url_for('admin.reset_password', user_id=u.user_id) }}" class="d-flex gap-1">{{ csrf() }}
+            <input class="form-control form-control-sm" type="password" name="new_password" placeholder="New password" minlength="8" required aria-label="New password for {{ u.username }}">
+            <button class="btn btn-sm btn-outline-dark" type="submit">Reset</button></form>
+        </div></td></tr>
+  {% endfor %}</tbody></table></div></div>
+<div class="card"><div class="card-header">Create a regular user</div><div class="card-body">
+  <form method="post" action="{{ url_for('admin.create_user') }}" class="row g-2">{{ csrf() }}
+    <div class="col-md-3"><input class="form-control" name="full_name" placeholder="Full name" maxlength="100" required></div>
+    <div class="col-md-2"><input class="form-control" name="username" placeholder="Username" maxlength="50" required></div>
+    <div class="col-md-3"><input class="form-control" type="email" name="email" placeholder="Email (optional)" maxlength="100"></div>
+    <div class="col-md-2"><input class="form-control" type="password" name="password" placeholder="Password" minlength="8" required></div>
+    <div class="col-md-2"><button class="btn btn-dark w-100" type="submit">Create</button></div>
+  </form>
+  <div class="small mt-2">New accounts are always regular users. There is exactly one administrator and it cannot be changed here.</div>
+</div></div>
+{% endblock %}

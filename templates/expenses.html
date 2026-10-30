@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, group_nav %}
+{% block title %}Expenses - {{ group.group_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2"><h2 class="mb-0">{{ group.group_name }}</h2>
+  <a class="btn btn-dark" href="{{ url_for('expenses.new', group_id=group.group_id) }}">Add expense</a></div>
+{{ group_nav(group, 'expenses') }}
+<div class="mb-3">
+  <a class="btn btn-sm {{ 'btn-dark' if status == 'active' else 'btn-outline-dark' }}" href="{{ url_for('expenses.history', group_id=group.group_id, status='active') }}">Active</a>
+  <a class="btn btn-sm {{ 'btn-dark' if status == 'archived' else 'btn-outline-dark' }}" href="{{ url_for('expenses.history', group_id=group.group_id, status='archived') }}">Archived</a>
+</div>
+<div class="card"><div class="card-body p-0">
+  <table class="table mb-0"><thead><tr><th>Date</th><th>Title</th><th>Category</th><th>Paid by</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+  {% for e in expenses %}
+    <tr><td>{{ e.expense_date|date }}</td><td><a href="{{ url_for('expenses.detail', expense_id=e.expense_id) }}">{{ e.expense_title }}</a></td>
+        <td>{{ e.category_name }}</td><td>{{ e.paid_by_name }}</td><td>{{ e.amount|peso }}</td><td>{{ badge(e.status) }}</td></tr>
+  {% else %}<tr><td colspan="6">No {{ status }} expenses.</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}

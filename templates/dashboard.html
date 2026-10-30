@@ -1,0 +1,163 @@
+
+{% extends "base.html" %}
+{% from "_macros.html" import badge, balance_text %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-heading">
+  <div>
+    <div class="page-eyebrow">YOUR FINANCES, TOGETHER</div>
+    <h2 class="dashboard-title">Dashboard</h2>
+    <p class="dashboard-subtitle">Here is an overview of your groups and shared expenses.</p>
+  </div>
+  <a class="btn btn-success" href="{{ url_for('groups.list_groups') }}">
+    <span aria-hidden="true">+</span> View groups
+  </a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card stat stat-groups">
+      <div class="card-body">
+        <div class="stat-topline">
+          <span class="stat-label">Your groups</span>
+          <span class="stat-icon" aria-hidden="true">♧</span>
+        </div>
+        <div class="stat-value">{{ totals.groups }}</div>
+        <div class="stat-description">Groups you belong to</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card stat stat-owed">
+      <div class="card-body">
+        <div class="stat-topline">
+          <span class="stat-label">You owe</span>
+          <span class="stat-icon" aria-hidden="true">↗</span>
+        </div>
+        <div class="stat-value">{{ totals.owed_by_me|peso }}</div>
+        <div class="stat-description">Your outstanding amount to pay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card stat stat-receive">
+      <div class="card-body">
+        <div class="stat-topline">
+          <span class="stat-label">You are owed</span>
+          <span class="stat-icon" aria-hidden="true">↙</span>
+        </div>
+        <div class="stat-value">{{ totals.owed_to_me|peso }}</div>
+        <div class="stat-description">Amount others owe you</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card dashboard-panel mb-4">
+  <div class="card-header panel-heading">
+    <div>
+      <h3 class="panel-title">Your groups</h3>
+      <p class="panel-subtitle">Review expenses and balances for each group.</p>
+    </div>
+    <a class="panel-link" href="{{ url_for('groups.list_groups') }}">View all groups →</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Group</th>
+          <th>Members</th>
+          <th>Total expenses</th>
+          <th>Your balance</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in groups %}
+        <tr>
+          <td>
+            <div class="group-name">{{ g.group_name }}</div>
+            <div class="table-secondary-text">Shared expenses</div>
+          </td>
+          <td>{{ g.active_member_count }}</td>
+          <td class="amount-cell">{{ g.active_expense_total|peso }}</td>
+          <td>{{ balance_text(g.net_balance) }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-success"
+               href="{{ url_for('groups.detail', group_id=g.group_id) }}">
+              Open group
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="empty-state">
+            <div class="empty-state-icon" aria-hidden="true">♧</div>
+            <div class="empty-state-title">No groups yet</div>
+            <p>Create a group to start managing shared expenses.</p>
+            <a class="btn btn-success btn-sm" href="{{ url_for('groups.list_groups') }}">
+              View groups
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card dashboard-panel">
+  <div class="card-header panel-heading">
+    <div>
+      <h3 class="panel-title">Your open payments</h3>
+      <p class="panel-subtitle">Check payments that still need attention.</p>
+    </div>
+    <span class="section-indicator">Payment overview</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Group</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Amount</th>
+          <th>Due date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in open_payments %}
+        <tr>
+          <td>
+            <a class="group-name group-table-link"
+               href="{{ url_for('settlements.open_list', group_id=s.group_id) }}">
+              {{ s.group_name }}
+            </a>
+          </td>
+          <td>{{ s.payer_name }}</td>
+          <td>{{ s.receiver_name }}</td>
+          <td class="amount-cell">{{ s.amount|peso }}</td>
+          <td>{{ s.due_date|date }}</td>
+          <td>{{ badge(s.status) }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="empty-state">
+            <div class="empty-state-icon" aria-hidden="true">✓</div>
+            <div class="empty-state-title">No open payments</div>
+            <p>You have no open payments to review here.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

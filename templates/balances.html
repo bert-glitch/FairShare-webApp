@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, balance_text, group_nav %}
+{% block title %}Balances - {{ group.group_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-2">{{ group.group_name }}</h2>
+{{ group_nav(group, 'balances') }}
+<div class="card"><div class="card-body p-0">
+  <table class="table mb-0"><thead><tr><th>Member</th><th>Paid</th><th>Assigned share</th><th>Settlements paid</th><th>Settlements received</th><th>Net balance</th><th>Meaning</th></tr></thead><tbody>
+  {% for r in rows %}
+    <tr><td>{{ r.full_name }} {% if r.membership_status == 'left' %}{{ badge('left') }}{% endif %}</td><td>{{ r.total_paid|peso }}</td><td>{{ r.total_share|peso }}</td>
+        <td>{{ r.settlements_paid|peso }}</td><td>{{ r.settlements_received|peso }}</td><td><strong>{{ r.net_balance|peso }}</strong></td><td>{{ balance_text(r.net_balance) }}</td></tr>
+  {% endfor %}</tbody>
+  <tfoot><tr><th colspan="5">Sum of all balances (must be 0.00)</th><th>{{ total|peso }}</th><td>{{ 'OK' if total == 0 else 'CHECK THE DATA' }}</td></tr></tfoot></table></div></div>
+<p class="small mt-3">Net balance = paid - assigned share + completed settlements paid - completed settlements received.
+  Positive means the group owes that member; negative means the member owes. Only active expenses and completed settlements count.</p>
+{% endblock %}

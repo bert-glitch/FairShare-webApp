@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, badge, group_nav %}
+{% block title %}Members - {{ group.group_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-2">{{ group.group_name }}</h2>
+{{ group_nav(group, 'members') }}
+<div class="card mb-4"><div class="card-body p-0">
+  <table class="table mb-0"><thead><tr><th>Name</th><th>Username</th><th>Joined</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for m in members %}
+    <tr><td>{{ m.full_name }}</td><td>{{ m.username }}</td><td>{{ m.joined_at|date }}</td><td>{{ badge(m.status) }}</td>
+      <td class="text-end">
+      {% if m.status == 'active' and (manager or m.user_id == current_user.user_id) %}
+        <form method="post" action="{{ url_for('groups.remove_member', group_id=group.group_id, user_id=m.user_id) }}" data-confirm="{{ 'Leave this group?' if m.user_id == current_user.user_id else 'Remove this member?' }}">{{ csrf() }}
+          <button class="btn btn-sm btn-outline-dark" type="submit">{{ 'Leave' if m.user_id == current_user.user_id else 'Remove' }}</button></form>
+      {% endif %}</td></tr>
+  {% endfor %}</tbody></table></div></div>
+<p class="small">A member can only leave when their balance is zero and they have no open payments.</p>
+{% if manager %}
+<div class="card"><div class="card-header">Add a member</div><div class="card-body">
+  <form method="post" action="{{ url_for('groups.add_member', group_id=group.group_id) }}" class="row g-2">{{ csrf() }}
+    <div class="col-md-8"><input class="form-control" name="username" placeholder="Username of an existing user" required></div>
+    <div class="col-md-4"><button class="btn btn-dark w-100" type="submit">Add</button></div>
+  </form></div></div>
+{% endif %}
+{% endblock %}

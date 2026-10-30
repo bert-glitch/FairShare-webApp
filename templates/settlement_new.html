@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, balance_text, group_nav %}
+{% block title %}Record a payment{% endblock %}
+{% block content %}
+<h2 class="mb-2">{{ group.group_name }}</h2>
+{{ group_nav(group, 'settlements') }}
+<div class="row g-4">
+  <div class="col-lg-7"><div class="card"><div class="card-header">Record a payment</div><div class="card-body">
+    <form method="post">{{ csrf() }}
+      <div class="row g-3">
+        <div class="col-md-6"><label class="form-label" for="payer_id">Who pays</label>
+          <select class="form-select" id="payer_id" name="payer_id" required>
+            {% for m in members %}<option value="{{ m.user_id }}" {{ 'selected' if (form.get('payer_id') == m.user_id|string) or (not form.get('payer_id') and m.user_id == current_user.user_id) }}>{{ m.full_name }}</option>{% endfor %}</select></div>
+        <div class="col-md-6"><label class="form-label" for="receiver_id">Who receives</label>
+          <select class="form-select" id="receiver_id" name="receiver_id" required>
+            {% for m in members %}<option value="{{ m.user_id }}" {{ 'selected' if form.get('receiver_id') == m.user_id|string }}>{{ m.full_name }}</option>{% endfor %}</select></div>
+        <div class="col-md-4"><label class="form-label" for="amount">Amount (PHP)</label>
+          <input class="form-control" id="amount" name="amount" inputmode="decimal" required placeholder="0.00" value="{{ form.get('amount','') }}"></div>
+        <div class="col-md-4"><label class="form-label" for="settlement_date">Payment date</label>
+          <input class="form-control" id="settlement_date" type="date" name="settlement_date" value="{{ form.get('settlement_date', today) }}" required></div>
+        <div class="col-md-4"><label class="form-label" for="due_date">Due date (optional)</label>
+          <input class="form-control" id="due_date" type="date" name="due_date" value="{{ form.get('due_date','') }}"></div>
+      </div>
+      <div class="form-check mt-3"><input class="form-check-input" type="checkbox" id="mark_completed" name="mark_completed" value="1" {{ 'checked' if form.get('mark_completed') }}>
+        <label class="form-check-label" for="mark_completed">The money has already been paid (record as completed)</label>
+        <div class="form-text">Only the receiver or the group manager can record a payment as already completed. Otherwise it stays pending until the receiver confirms it.</div></div>
+      <div class="mt-4"><button class="btn btn-dark" type="submit">Save payment</button>
+        <a class="btn btn-outline-dark" href="{{ url_for('settlements.open_list', group_id=group.group_id) }}">Cancel</a></div>
+    </form></div></div></div>
+  <div class="col-lg-5"><div class="card"><div class="card-header">Current balances</div><div class="card-body p-0">
+    <table class="table mb-0"><tbody>{% for b in balances %}<tr><td>{{ b.full_name }}</td><td>{{ balance_text(b.net_balance) }}</td></tr>{% endfor %}</tbody></table></div></div>
+    <p class="small mt-2">A payment cannot be more than the payer still owes, or more than the receiver is still owed (after other open payments).</p></div>
+</div>
+{% endblock %}

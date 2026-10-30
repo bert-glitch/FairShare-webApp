@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, badge %}
+{% block title %}Categories{% endblock %}
+{% block content %}
+<h2 class="mb-3">Expense categories</h2>
+<div class="card mb-4"><div class="card-body p-0">
+  <table class="table mb-0"><thead><tr><th>Name</th><th>Description</th><th>Expenses</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for c in categories %}
+    <tr><td>{{ c.category_name }}</td><td>{{ c.description or '' }}</td><td>{{ c.expense_count }}</td><td>{{ badge(c.status) }}</td>
+      <td class="text-end">{% if current_user.role == 'admin' %}
+        <form method="post">{{ csrf() }}<input type="hidden" name="action" value="toggle"><input type="hidden" name="category_id" value="{{ c.category_id }}">
+          <button class="btn btn-sm btn-outline-dark" type="submit">{{ 'Deactivate' if c.status == 'active' else 'Activate' }}</button></form>{% endif %}</td></tr>
+  {% endfor %}</tbody></table></div></div>
+{% if current_user.role == 'admin' %}
+<div class="card"><div class="card-header">Add a category</div><div class="card-body">
+  <form method="post" class="row g-2">{{ csrf() }}<input type="hidden" name="action" value="add">
+    <div class="col-md-4"><input class="form-control" name="category_name" maxlength="50" placeholder="Name" required></div>
+    <div class="col-md-6"><input class="form-control" name="description" maxlength="255" placeholder="Description (optional)"></div>
+    <div class="col-md-2"><button class="btn btn-dark w-100" type="submit">Add</button></div>
+  </form></div></div>
+{% else %}<p class="small">Only the administrator can add or change categories.</p>{% endif %}
+{% endblock %}

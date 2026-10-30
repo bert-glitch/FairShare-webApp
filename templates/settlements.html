@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, badge, balance_text, group_nav %}
+{% block title %}Settlements - {{ group.group_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2"><h2 class="mb-0">{{ group.group_name }}</h2>
+  <a class="btn btn-dark" href="{{ url_for('settlements.new', group_id=group.group_id) }}">Record a payment</a></div>
+{{ group_nav(group, 'settlements') }}
+<div class="card mb-4"><div class="card-header">Open payments</div><div class="card-body p-0">
+  <table class="table mb-0"><thead><tr><th>From</th><th>To</th><th>Amount</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for s in settlements %}
+    <tr><td>{{ s.payer_name }}</td><td>{{ s.receiver_name }}</td><td>{{ s.amount|peso }}</td><td>{{ s.due_date|date }}</td><td>{{ badge(s.status) }}</td>
+      <td class="text-end"><div class="d-inline-flex gap-1">
+        {% if manager or current_user.user_id == s.receiver_id %}
+        <form method="post" action="{{ url_for('settlements.complete', settlement_id=s.settlement_id) }}" data-confirm="Confirm that this payment was made?">{{ csrf() }}<button class="btn btn-sm btn-dark" type="submit">Mark completed</button></form>{% endif %}
+        {% if manager or current_user.user_id in (s.payer_id, s.receiver_id) %}
+        <form method="post" action="{{ url_for('settlements.cancel', settlement_id=s.settlement_id) }}" data-confirm="Cancel this payment?">{{ csrf() }}<button class="btn btn-sm btn-outline-dark" type="submit">Cancel</button></form>{% endif %}
+      </div></td></tr>
+  {% else %}<tr><td colspan="6">No open payments.</td></tr>{% endfor %}
+  </tbody></table></div></div>
+<div class="card"><div class="card-header">Who owes what right now</div><div class="card-body p-0">
+  <table class="table mb-0"><tbody>
+  {% for b in balances %}<tr><td>{{ b.full_name }}</td><td>{{ balance_text(b.net_balance) }}</td></tr>{% endfor %}</tbody></table></div></div>
+<p class="small mt-3">Only <strong>completed</strong> payments change balances. Pending and overdue payments are promises that are set aside against the debt until they are completed.</p>
+{% endblock %}

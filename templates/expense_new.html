@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, group_nav %}
+{% block title %}Add expense{% endblock %}
+{% block content %}
+<h2 class="mb-2">{{ group.group_name }}</h2>
+{{ group_nav(group, 'expenses') }}
+<div class="card"><div class="card-header">Add an expense</div><div class="card-body">
+  <form method="post" id="expense-form">{{ csrf() }}
+    <div class="row g-3">
+      <div class="col-md-6"><label class="form-label" for="expense_title">Title</label>
+        <input class="form-control" id="expense_title" name="expense_title" maxlength="100" required value="{{ form.get('expense_title','') }}"></div>
+      <div class="col-md-3"><label class="form-label" for="amount">Amount (PHP)</label>
+        <input class="form-control" id="amount" name="amount" inputmode="decimal" required value="{{ form.get('amount','') }}" placeholder="0.00"></div>
+      <div class="col-md-3"><label class="form-label" for="expense_date">Date</label>
+        <input class="form-control" id="expense_date" type="date" name="expense_date" max="{{ today }}" required value="{{ form.get('expense_date', today) }}"></div>
+      <div class="col-md-4"><label class="form-label" for="category_id">Category</label>
+        <select class="form-select" id="category_id" name="category_id" required>
+          {% for c in categories %}<option value="{{ c.category_id }}" {{ 'selected' if form.get('category_id') == c.category_id|string }}>{{ c.category_name }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-4"><label class="form-label" for="paid_by">Paid by</label>
+        <select class="form-select" id="paid_by" name="paid_by" required>
+          {% for m in members %}<option value="{{ m.user_id }}" {{ 'selected' if (form.get('paid_by') == m.user_id|string) or (not form.get('paid_by') and m.user_id == current_user.user_id) }}>{{ m.full_name }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-4"><label class="form-label" for="description">Description (optional)</label>
+        <input class="form-control" id="description" name="description" maxlength="255" value="{{ form.get('description','') }}"></div>
+    </div>
+    <hr>
+    <div class="mb-2"><span class="form-label d-block">How is it split?</span>
+      <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="split_mode" id="mode_equal" value="equal" {{ 'checked' if form.get('split_mode', 'equal') == 'equal' }}><label class="form-check-label" for="mode_equal">Equally</label></div>
+      <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="split_mode" id="mode_custom" value="custom" {{ 'checked' if form.get('split_mode') == 'custom' }}><label class="form-check-label" for="mode_custom">Custom amounts</label></div>
+    </div>
+    <div data-mode="equal">
+      <p class="small">Tick everyone who shares this expense. Centavos that do not divide evenly go one each to the first people in ascending user id order.</p>
+      {% for m in members %}
+      <div class="form-check"><input class="form-check-input" type="checkbox" name="participants" id="p{{ m.user_id }}" value="{{ m.user_id }}"
+           {{ 'checked' if (not form) or (m.user_id|string in form.getlist('participants')) }}><label class="form-check-label" for="p{{ m.user_id }}">{{ m.full_name }}</label></div>
+      {% endfor %}
+    </div>
+    <div data-mode="custom" class="d-none">
+      <p class="small">Enter each person's share. The shares must add up exactly to the amount. Leave a box empty for no share.</p>
+      {% for m in members %}
+      <div class="row g-2 mb-1 align-items-center"><div class="col-md-4"><label for="share_{{ m.user_id }}" class="col-form-label">{{ m.full_name }}</label></div>
+        <div class="col-md-3"><input class="form-control custom-share" id="share_{{ m.user_id }}" name="share_{{ m.user_id }}" inputmode="decimal" placeholder="0.00" value="{{ form.get('share_' ~ m.user_id, '') }}"></div></div>
+      {% endfor %}
+      <div class="small mt-2">Shares so far: <strong id="share-total">0.00</strong></div>
+    </div>
+    <div class="mt-4"><button class="btn btn-dark" type="submit">Save expense</button>
+      <a class="btn btn-outline-dark" href="{{ url_for('expenses.history', group_id=group.group_id) }}">Cancel</a></div>
+  </form></div></div>
+{% endblock %}

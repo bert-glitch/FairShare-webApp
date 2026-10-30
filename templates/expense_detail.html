@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, badge, group_nav %}
+{% block title %}{{ expense.expense_title }}{% endblock %}
+{% block content %}
+<h2 class="mb-2">{{ group.group_name }}</h2>
+{{ group_nav(group, 'expenses') }}
+<div class="row g-4">
+  <div class="col-lg-6"><div class="card"><div class="card-header">Expense {{ badge(expense.status) }}</div><div class="card-body">
+    <h4>{{ expense.expense_title }}</h4>
+    <dl class="row mb-0">
+      <dt class="col-sm-4">Amount</dt><dd class="col-sm-8">{{ expense.amount|peso }}</dd>
+      <dt class="col-sm-4">Date</dt><dd class="col-sm-8">{{ expense.expense_date|date }}</dd>
+      <dt class="col-sm-4">Category</dt><dd class="col-sm-8">{{ expense.category_name }}</dd>
+      <dt class="col-sm-4">Paid by</dt><dd class="col-sm-8">{{ expense.paid_by_name }}</dd>
+      <dt class="col-sm-4">Recorded by</dt><dd class="col-sm-8">{{ expense.created_by_name }}</dd>
+      <dt class="col-sm-4">Description</dt><dd class="col-sm-8">{{ expense.description or '-' }}</dd>
+    </dl>
+    {% if can_archive %}
+    <form method="post" action="{{ url_for('expenses.archive', expense_id=expense.expense_id) }}" class="mt-3" data-confirm="Archive this expense? It will stop counting toward balances.">{{ csrf() }}
+      <button class="btn btn-outline-dark" type="submit">Archive expense</button></form>
+    {% endif %}
+  </div></div></div>
+  <div class="col-lg-6"><div class="card"><div class="card-header">Split breakdown</div><div class="card-body p-0">
+    <table class="table mb-0"><thead><tr><th>Member</th><th class="text-end">Share</th></tr></thead><tbody>
+    {% for s in splits %}<tr><td>{{ s.full_name }}</td><td class="text-end">{{ s.share_amount|peso }}</td></tr>{% endfor %}
+    </tbody><tfoot><tr><th>Total of shares</th><th class="text-end">{{ check.allocated_total|peso }}</th></tr>
+      <tr><td>Difference from the expense amount</td><td class="text-end">{{ check.difference|peso }} {{ '(balanced)' if check.is_balanced else '(NOT balanced)' }}</td></tr></tfoot></table>
+  </div></div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, badge %}
+{% block title %}Groups{% endblock %}
+{% block content %}
+<h2 class="mb-3">Groups</h2>
+<div class="card mb-4"><div class="card-body p-0">
+  <table class="table mb-0"><thead><tr><th>Group</th><th>Created by</th><th>Members</th><th>Expenses</th><th>Open payments</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for g in groups %}
+    <tr><td>{{ g.group_name }}</td><td>{{ g.created_by_name }}</td><td>{{ g.active_member_count }}</td>
+        <td>{{ g.active_expense_total|peso }} ({{ g.active_expense_count }})</td><td>{{ g.open_settlement_count }}</td>
+        <td>{{ badge(g.group_status) }}</td>
+        <td class="text-end"><a class="btn btn-sm btn-outline-dark" href="{{ url_for('groups.detail', group_id=g.group_id) }}">Open</a></td></tr>
+  {% else %}<tr><td colspan="7">No groups yet.</td></tr>{% endfor %}
+  </tbody></table></div></div>
+<div class="card"><div class="card-header">Create a group</div><div class="card-body">
+  <form method="post" action="{{ url_for('groups.create_group') }}" class="row g-2">{{ csrf() }}
+    <div class="col-md-4"><input class="form-control" name="group_name" maxlength="100" placeholder="Group name" required></div>
+    <div class="col-md-6"><input class="form-control" name="description" maxlength="255" placeholder="Description (optional)"></div>
+    <div class="col-md-2"><button class="btn btn-dark w-100" type="submit">Create</button></div>
+  </form></div></div>
+{% endblock %}

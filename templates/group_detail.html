@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, badge, balance_text, group_nav %}
+{% block title %}{{ group.group_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-2">
+  <div><h2 class="mb-0">{{ group.group_name }} {{ badge(group.group_status) }}</h2>
+    <div class="small">{{ group.description or '' }} Created by {{ group.created_by_name }}.</div></div>
+  <div>
+    {% if manager and group.group_status == 'active' %}
+    <form method="post" action="{{ url_for('groups.archive_group', group_id=group.group_id) }}" data-confirm="Archive this group? Everyone must be settled up first.">{{ csrf() }}
+      <button class="btn btn-sm btn-outline-dark" type="submit">Archive group</button></form>
+    {% elif current_user.role == 'admin' and group.group_status == 'archived' %}
+    <form method="post" action="{{ url_for('groups.reactivate_group', group_id=group.group_id) }}">{{ csrf() }}
+      <button class="btn btn-sm btn-outline-dark" type="submit">Reactivate group</button></form>
+    {% endif %}
+  </div>
+</div>
+{{ group_nav(group, 'detail') }}
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card stat"><div class="card-body"><div class="stat-label">Active members</div><div class="stat-value">{{ group.active_member_count }}</div></div></div></div>
+  <div class="col-md-3"><div class="card stat"><div class="card-body"><div class="stat-label">Active expenses</div><div class="stat-value">{{ group.active_expense_total|peso }}</div><div class="small">{{ group.active_expense_count }} expense(s)</div></div></div></div>
+  <div class="col-md-3"><div class="card stat"><div class="card-body"><div class="stat-label">Completed payments</div><div class="stat-value">{{ group.completed_settlement_total|peso }}</div></div></div></div>
+  <div class="col-md-3"><div class="card stat"><div class="card-body"><div class="stat-label">Open payments</div><div class="stat-value">{{ group.open_settlement_total|peso }}</div><div class="small">{{ group.open_settlement_count }} open, {{ group.overdue_settlement_count }} overdue</div></div></div></div>
+</div>
+<div class="d-flex gap-2 mb-4">
+  <a class="btn btn-dark" href="{{ url_for('expenses.new', group_id=group.group_id) }}">Add expense</a>
+  <a class="btn btn-outline-dark" href="{{ url_for('settlements.new', group_id=group.group_id) }}">Record a payment</a>
+</div>
+<div class="row g-4">
+  <div class="col-lg-7"><div class="card"><div class="card-header">Balances</div><div class="card-body p-0">
+    <table class="table mb-0"><thead><tr><th>Member</th><th>Paid</th><th>Share</th><th>Balance</th></tr></thead><tbody>
+    {% for m in members %}<tr><td>{{ m.full_name }}</td><td>{{ m.total_paid|peso }}</td><td>{{ m.total_share|peso }}</td><td>{{ balance_text(m.net_balance) }}</td></tr>
+    {% else %}<tr><td colspan="4">No members.</td></tr>{% endfor %}</tbody></table></div></div></div>
+  <div class="col-lg-5"><div class="card"><div class="card-header">Recent expenses</div><div class="card-body p-0">
+    <table class="table mb-0"><tbody>
+    {% for e in recent %}<tr><td><a href="{{ url_for('expenses.detail', expense_id=e.expense_id) }}">{{ e.expense_title }}</a><div class="small">{{ e.paid_by_name }}, {{ e.expense_date|date }}</div></td><td class="text-end">{{ e.amount|peso }}</td></tr>
+    {% else %}<tr><td>No expenses yet.</td></tr>{% endfor %}</tbody></table></div></div></div>
+</div>
+{% if open_payments %}
+<div class="card mt-4"><div class="card-header">Open payments</div><div class="card-body p-0">
+  <table class="table mb-0"><tbody>
+  {% for s in open_payments %}<tr><td>{{ s.payer_name }} pays {{ s.receiver_name }}</td><td>{{ s.amount|peso }}</td><td>{{ s.due_date|date }}</td><td>{{ badge(s.status) }}</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, group_nav %}
+{% block title %}Payment history - {{ group.group_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-2">{{ group.group_name }}</h2>
+{{ group_nav(group, 'history') }}
+<div class="mb-3">
+  {% for key in ['all','pending','overdue','completed','cancelled'] %}
+  <a class="btn btn-sm {{ 'btn-dark' if status == key else 'btn-outline-dark' }}" href="{{ url_for('settlements.history', group_id=group.group_id, status=key) }}">{{ key|capitalize }}</a>
+  {% endfor %}
+</div>
+<div class="card"><div class="card-body p-0">
+  <table class="table mb-0"><thead><tr><th>#</th><th>Date</th><th>From</th><th>To</th><th>Amount</th><th>Due</th><th>Status</th><th>Recorded by</th></tr></thead><tbody>
+  {% for s in settlements %}
+    <tr><td>{{ s.settlement_id }}</td><td>{{ s.settlement_date|date }}</td><td>{{ s.payer_name }}</td><td>{{ s.receiver_name }}</td><td>{{ s.amount|peso }}</td>
+        <td>{{ s.due_date|date }}</td><td>{{ badge(s.status) }}</td><td>{{ s.created_by_name }}</td></tr>
+  {% else %}<tr><td colspan="8">Nothing to show.</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}
